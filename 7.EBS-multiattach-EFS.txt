@@ -1,0 +1,76 @@
+EFS-ELASTIC FILE SYSTEM
+-----------------------------------
+
+EBS multi attach and EFS
+------------------------
+
+Drawbacks of EBS:
+	1. EBS volume and the running instance should be in the same AZ.
+	2. Single EBS can't be attached to multiple EC2 machines.
+
+To overcome the above drawbacks:
+	1. To enable multi attach feature we should opt for 
+		a. Provisioned IOPs SSD
+		b. We are forced to choose nitro based EC2 instances to use multi attached EBS.
+	2. EBS is a AZ specific service.
+
+Transition into Infrequent Access(IA):
+	If the data is untouched for 30 days that data will be moved to Infrequent Access storage.
+	Once we try to access the data which got moved to (IA) during the first access that specific data will be moved to standard storage automatically.
+
+Steps to create an EFS:
+------------------------
+	1. Seach for EFS in the search bar and click on Create File system.
+	2. Click on customize.
+	3. You will be redirected to fill in file system settings.
+	4. Provide any name.
+	5. Select "Regional" under File system type.
+	6. Enable "Automatic backup"
+	7. Leave the "lifecycle management" settings and "encryption" as it is (go through the defenition under each type). Select "Transition into Archive" to "None" if you are getting an error.
+	8. Under performance settings select "Bursting".
+	9. Tags are optional, hit on next.
+       10. Under network settings leave the VPC and in mount target replace ur own sg
+       security group--> vpc feature-->edit the inbound rule nfs anywhere ipv4
+       11. Hit on next and leave the "File system policy" as it is optional.
+       12. Hit on next and "Review and create" in the next page.
+
+Steps to attach EFS with multiple EC2 instances:
+------------------------------------------------
+	1. Please create 2 EC2 instances at first.
+	2. Click on the EFS we created above.
+	3. Click on attach.
+	4. Click on "Mount via DNS" or "Mount via IP".
+	5. Login to both the instances we created and run the below commands.
+
+	sudo su --> Switch user as root user
+	yum update -y --> update the current packages
+	yum install -y nfs-utils --> to install nfs
+	mkdir efs --> creating a directory on both the servers(you can give any name)
+
+	6. After you execute the above commands on both the instances mount the directory we created to EFS. (in our case it is "efs")
+	7. To mount the filesystem go to EFS we created and look for the "Attach" option, copy the command which says "Using the NFS client". Below is an example of the command.
+
+	sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport fs-0f8f5eafeda8d5522.efs.us-east-1.amazonaws.com:/ efs
+
+	8. Now login to any of the EC2 instances and try to create a file using "touch" command. Then login to the other instance and verify whether you are able to access the same file.
+
+
+300 MBPs --> Bandwidth
+250 MBPs --> Throughput
+
+Bandwidth - The maximum amount of data which can be transferred/downloaded from one system to another is called as Bandwidth.
+
+Throughput - The amount of data which is transferred/downloaded at the moment in a given point of time. (Data downloaded/uploaded per second)
+
+
+linux commands
+----------------------------
+mkdir efs-->make directory
+cd efs---->change directory
+touch file1.txt--> create a file.
+vi file1.txt-->editor tool to edit a file
+i
+enter content
+esc
+shift ; wq--->:wq
+cat file1.txt-->to read a file
